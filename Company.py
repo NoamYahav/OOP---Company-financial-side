@@ -9,10 +9,10 @@ class Company:
         if "  " in name:#Varify name rules
             raise ValueError
         self.name = name
-        if type(stocks_num) != int or stocks_num < 0: #Varify stocks num rules
+        if type(stocks_num) != int or stocks_num <= 0: #Varify stocks num rules
             raise ValueError
         self.stocks_num = stocks_num
-        if (type(stock_price) != float and type(stock_price) != int) or stock_price < 0: #Varify stock price rules
+        if (type(stock_price) != float and type(stock_price) != int) or stock_price <= 0: #Varify stock price rules
             raise ValueError
         self.stock_price = stock_price
         if type(comp_type) != str or not (comp_type[0].isupper()) or len(comp_type) <2:#Varify comp type rules
@@ -153,3 +153,5 @@ class Company:
         value = self.net_worth() + other.net_worth()
         price = value/stocks
         return Company(self.name,stocks,price,self.comp_type)
+
+
