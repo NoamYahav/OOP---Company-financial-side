@@ -36,7 +36,7 @@ class TestCompany(unittest.TestCase):
         self.assertEqual(self.company.name, "New Company Name")
 
         # Test invalid name change
-        self.assertFalse(self.company.set_name("invalid name"))
+        self.assertFalse(self.company.set_name("invalid company"))
 
     def test_set_stocks_num(self):
         # Test setting stocks number
