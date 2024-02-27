@@ -42,6 +42,7 @@ To use the Company and CompanyNode classes in your Python projects, simply impor
 
 ### **code:**
 from Company import Company
+
 from CompanyNode import CompanyNode
 
 ### Example usage of Company class
