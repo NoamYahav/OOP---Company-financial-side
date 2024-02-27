@@ -37,17 +37,17 @@ python -m unittest tests.test_companynode
 These commands will automatically discover and execute all the unit tests defined in the respective test files within the tests directory.
 
 For more detailed information on each test case and its implementation, please take a look at the test files in the test directory.
-### Usage
+# Usage
 To use the Company and CompanyNode classes in your Python projects, simply import them from the provided modules and instantiate objects as needed. You can then utilize the various methods and features of these classes to manage and analyze financial data for individual companies and hierarchical structures of companies.
 **code:**
 from Company import Company
 from CompanyNode import CompanyNode
 
-# Example usage of Company class
+## Example usage of Company class
 company1 = Company("Company A", 100, 10.0, "Type A")
 print(company1.net_worth())  # Output: 1000.0
 
-# Example usage of CompanyNode class
+## Example usage of CompanyNode class
 parent_company = CompanyNode("Parent Company", 200, 15.0, "Type B")
 child_company = CompanyNode("Child Company", 50, 10.0, "Type C")
 parent_company.add_child(child_company)
