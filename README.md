@@ -39,7 +39,8 @@ These commands will automatically discover and execute all the unit tests define
 For more detailed information on each test case and its implementation, please take a look at the test files in the test directory.
 ## Usage
 To use the Company and CompanyNode classes in your Python projects, simply import them from the provided modules and instantiate objects as needed. You can then utilize the various methods and features of these classes to manage and analyze financial data for individual companies and hierarchical structures of companies.
-**code:**
+
+### **code:**
 from Company import Company
 from CompanyNode import CompanyNode
 
