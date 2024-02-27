@@ -23,71 +23,71 @@ class Company:
         return self.stocks_num * self.stock_price
 
     def set_name(self, name):
-        # Set name if valid
-        if self._validate_name(name):
-            self.name = name
-            return True
-        return False
+        if not self._validate_name(name):
+            return False
+        self.name = name
+        return True
+
 
     def set_stocks_num(self, stocks_num):
-        # Set stocks number if valid
-        if self._validate_stocks_num(stocks_num):
-            m = self.net_worth()
-            if m == 0:
-                self.stocks_num = stocks_num
-            else:
-                self.stock_price = m / stocks_num
-                self.stocks_num = stocks_num
-            return True
-        return False
+        if not self._validate_stocks_num(stocks_num):
+            return False
+
+        net_worth = self.net_worth()
+        if net_worth != 0:
+            self.stock_price = net_worth / stocks_num
+        self.stocks_num = stocks_num
+        return True
 
     def set_stock_price(self, stock_price):
-        # Set stock price if valid
-        if self._validate_stock_price(stock_price):
-            m = self.net_worth()
-            self.stocks_num = int(m / stock_price)
-            self.stock_price = stock_price
-            return True
-        return False
+        if not self._validate_stock_price(stock_price):
+            return False
+
+        self.stocks_num = int(self.net_worth() / stock_price)
+        self.stock_price = stock_price
+        return True
 
     def set_comp_type(self, comp_type):
-        # Set company type if valid
-        if self._validate_comp_type(comp_type):
-            self.comp_type = comp_type
-            return True
-        return False
+        if not self._validate_comp_type(comp_type):
+            return False
+
+        self.comp_type = comp_type
+        return True
 
     def update_net_worth(self, net_worth):
-        # Update net worth by changing stock price only if valid
         if not self._validate_net_worth(net_worth):
             return False
+
         self.stock_price = net_worth / self.stocks_num
         return True
 
     def add_stocks(self, number):
-        # Add stocks if valid
         if not self._validate_add_stocks(number):
             return False
+
         self.stocks_num += number
         return True
 
+    # Get comparison value based on comparison type (helping function)
     def comparison_value(self):
-        # Get comparison value based on comparison type (helping function)
         if self._comparison_type == "net value":
             return self.net_worth()
         if self._comparison_type == "stock num":
             return self.stocks_num
         if self._comparison_type == "stock price":
             return self.stock_price
+        if self._comparison_type == "total sum":
+            # For Companynode
+            return self.total_net_worth()
 
-# -----------------------      Validate Methods    -----------------------------
+    # -----------------------      Validate Methods    -----------------------------
     def _validate_name(self, name):
         return (
-            isinstance(name, str)
-            and name[0].isupper()
-            and len(name) >= 2
-            and all(x.isalpha() or x.isspace() for x in name)
-            and "  " not in name
+                isinstance(name, str)
+                and name[0].isupper()
+                and len(name) >= 2
+                and all(x.isalpha() or x.isspace() for x in name)
+                and "  " not in name
         )
 
     def _validate_stocks_num(self, stocks_num):
@@ -98,10 +98,10 @@ class Company:
 
     def _validate_comp_type(self, comp_type):
         return (
-            isinstance(comp_type, str)
-            and comp_type[0].isupper()
-            and len(comp_type) >= 2
-            and "  " not in comp_type
+                isinstance(comp_type, str)
+                and comp_type[0].isupper()
+                and len(comp_type) >= 2
+                and "  " not in comp_type
         )
 
     def _validate_net_worth(self, net_worth):
@@ -114,7 +114,7 @@ class Company:
     def _validate_comparison_type(cls, comparison_type):
         return comparison_type in ["net value", "stock num", "stock price"]
 
-# -----------------------      Class Methods    -----------------------------
+    # -----------------------      Class Methods    -----------------------------
 
     @classmethod
     def change_comparison_type(cls, comparison_type):
@@ -130,7 +130,8 @@ class Company:
 
     def __repr__(self):
         return self.__str__()
-## All of the equilty function using the helping function comparison_value.
+
+    ## All of the equilty function using the helping function comparison_value.
     def __lt__(self, other):
         if isinstance(other, Company):
             return self.comparison_value() < other.comparison_value()
@@ -164,5 +165,5 @@ class Company:
     def __add__(self, other):
         stocks = self.stocks_num + other.stocks_num
         value = self.net_worth() + other.net_worth()
-        price = value/stocks
-        return Company(self.name,stocks,price,self.comp_type)
+        price = value / stocks
+        return Company(self.name, stocks, price, self.comp_type)

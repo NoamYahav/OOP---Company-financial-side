@@ -5,9 +5,9 @@ from Company import Company
 
 class CompanyNode(Company):
     _comparison_type = "net value"
+
     def __init__(self, name, stocks_num, stock_price, comp_type):
-        Company.__init__(self,name,stocks_num,stock_price,comp_type) #Inherites company instance
-        # Define children, parent as protected attributes (Name mangaling)
+        Company.__init__(self, name, stocks_num, stock_price, comp_type)
         self.__children = []
         self.__parent = None
 
@@ -18,55 +18,55 @@ class CompanyNode(Company):
         return self.__children
 
     def add_child(self, child):
-        if not isinstance(child, CompanyNode):
+        if not isinstance(child, CompanyNode) or self < child:
             return False
-        if self >= child:
-            self.__children.append(child)
-            child.__parent = self
-            return True
-        return False
 
+        self.__children.append(child)
+        child.__parent = self
+        return True
+
+    # Calculate net worth including children - Recursive
     def total_net_worth(self):
-        #Calculte net worth including children - Recursive
         total_sum = self.net_worth()
         for child in self.get_children():
             total_sum += child.total_net_worth()
         return total_sum
 
     def set_stock_price(self, stock_price):
-        m = self.net_worth()
         if not isinstance(stock_price, (float, int)) or stock_price < 0:
             return False
+
+        net_worth = self.net_worth()
         current_company = copy.deepcopy(self)
-        # Making a copy of self, and checking the companynode applies before updaiting self.
-        current_company.stocks_num = int(m/stock_price)
+        current_company.stocks_num = int(net_worth / stock_price)
         current_company.stock_price = stock_price
-        if current_company.test_node_order_validity():
-            self.stocks_num = int(m / stock_price)
-            self.stock_price = stock_price
-            return True
-        return False
+        return self.set_company_stock_values(current_company, current_company.stocks_num)
 
     def set_stocks_num(self, stocks_num):
         if not isinstance(stocks_num, (int)) or stocks_num < 0:
             return False
-        m = self.net_worth()
-        if m == 0:
+
+        net_worth = self.net_worth()
+        if net_worth == 0:
             return True
+
         current_company = copy.deepcopy(self)
-        #Making a copy of self, and checking the companynode applies before updaiting self.
-        current_company.stock_price = m/stocks_num
-        if current_company.test_node_order_validity():
-            self.stock_price = m / stocks_num
-            self.stocks_num = stocks_num
-            return True
-        return False
+        current_company.stock_price = net_worth / stocks_num
+        return self.set_company_stock_values(current_company, stocks_num)
+
+    def set_company_stock_values(self, current_company, stocks_num):
+        if not current_company.test_node_order_validity():
+            return False
+
+        self.stock_price = current_company.stock_price
+        self.stocks_num = stocks_num
+        return True
 
     def update_net_worth(self, net_worth):
         if not isinstance(net_worth, (float, int)) or net_worth <= 0:
             return False
+
         current_company = copy.deepcopy(self)
-        # Making a copy of self to ensure node order validity
         current_company.stock_price = net_worth / current_company.stocks_num
         if current_company.test_node_order_validity():
             self.stock_price = net_worth / self.stocks_num
@@ -76,7 +76,8 @@ class CompanyNode(Company):
     def add_stocks(self, number):
         if not isinstance(number, int) or number + self.stocks_num <= 0:
             return False
-        current_company = copy.deepcopy(self)  # Making a copy of self to ensure node order validity
+
+        current_company = copy.deepcopy(self)
         current_company.stocks_num += number
         if current_company.test_node_order_validity():
             self.stocks_num += number
@@ -84,93 +85,78 @@ class CompanyNode(Company):
         return False
 
     def test_node_order_validity(self):
-        lst_of_children = self.get_children()
-        for x in lst_of_children:
-            #Checking all self children follow companynode rule
-            if self < x:
+        list_of_children = self.get_children()
+        for children in list_of_children:
+            # Checking all self children follow companynode rule
+            if self < children:
                 return False
-        main_lst = []
-        temp_lst = [self]
-        while temp_lst != []:
-            #Building a list contain all of self ancestors
-            if temp_lst[0].get_parent() == None:
-                break
-            main_lst.append(temp_lst[0].get_parent())
-            temp_lst.append(temp_lst[0].get_parent())
-            temp_lst.pop(0)
-        for y in main_lst:#Checking self ancestor follow company node rule
-            if self > y:
+
+        main_lst = self.get_parents_companies(self)
+        for company in main_lst:  # Checking self ancestor follow company node rule
+            if self > company:
                 return False
         return True
 
     def is_ancestor(self, other):
-        main_lst = []
-        temp_lst = [other]
-        while temp_lst != []: #Building a list of parents, untill hitting None.
-            if temp_lst[0].get_parent() == None:
-                break
-            main_lst.append(temp_lst[0].get_parent())
-            temp_lst.append(temp_lst[0].get_parent())
-            temp_lst.pop(0)
+        main_lst = self.get_parents_companies(other)
         for parent in main_lst:
             if parent == self:
                 return True
         return False
 
-    def comparison_value(self): #Helping function connecting between the comparison_type string to math function.
-        if self._comparison_type == "net value":
-            return self.net_worth()
-        if self._comparison_type == "stock num":
-            return self.stocks_num
-        if self._comparison_type == "stock price":
-            return self.stock_price
-        if self._comparison_type == "total sum":
-            return self.total_net_worth()
+    def get_parents_companies(self, base_company):
+        main_lst = []
+        temp_lst = [base_company]
+        while temp_lst != []:  # Building a list of parents, untill hitting None.
+            if temp_lst[0].get_parent() == None:
+                break
+            main_lst.append(temp_lst[0].get_parent())
+            temp_lst.append(temp_lst[0].get_parent())
+            temp_lst.pop(0)
+
+        return main_lst
 
     def is_leaf(self):
-        if len(self) == 0:
-            return True
-        return False
+        return len(self) == 0
 
     # -----------------------      Class Methods     -----------------------------
+
     @classmethod
-    def change_comparison_type(cls,comparison_type):
-        if comparison_type != "net value" and comparison_type != "stock num" and comparison_type != "stock price" and comparison_type != "total sum":
-            return False
-        cls._comparison_type = comparison_type
+    def change_comparison_type(cls, comparison_type):
+        if comparison_type in ["net value", "stock num", "stock price", "total sum"]:
+            cls._comparison_type = comparison_type
 
     def __len__(self):
         return len(self.__children)
 
-
+    # Repr the company as asked : (Ancestor Comp, [Children, [Grandchildren e.g]]])
     def __repr__(self):
-        #Repr the company as asked : (Ancestor Comp, [Children, [Grandchildren e.g]]])
         children = self.__children
-        lst = []
-        for child in children:
-            lst.append(child)
-        result = '[{}, {}]'.format(self.__str__(),lst) #As defined in Company class
+        result = '[{}, {}]'.format(self.__str__(), children)  # As defined in Company class
         return result
 
+    # Merging other Company to Self including other childrens
     def __add__(self, other):
-        #Merging other Company to Self including other childrens
         if other.is_ancestor(self):
             raise ValueError
+
         if self.is_ancestor(other):
-            m = other.__parent
-            m.__children.remove(other)
+            other.__parent.__children.remove(other)
+
         new_node = copy.deepcopy(self)
         new_node.stocks_num = self.stocks_num + other.stocks_num
         value = self.net_worth() + other.net_worth()
-        new_node.stock_price = value/new_node.stocks_num
-        for x in other.__children:
-            new_node.__children.append(x)
-        if new_node.test_node_order_validity():
-            other.__children = []
-            other.__parent = None
-            return new_node
-        else:
+        new_node.stock_price = value / new_node.stocks_num
+
+        for child in other.__children:
+            new_node.__children.append(child)
+
+        if not new_node.test_node_order_validity():
             raise ValueError
+
+        other.__children = []
+        other.__parent = None
+        return new_node
 
     def __lt__(self, other):
         if not isinstance(other, CompanyNode):
